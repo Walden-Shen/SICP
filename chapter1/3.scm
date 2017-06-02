@@ -120,3 +120,40 @@
 
 ;1.35 (fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.0)
 ;1.36 (fixed-point (lambda (x) (/ (log 1000) (log x))) 2.0)
+;1.37
+(define (cont-frac n d k)
+ (define (cf i)
+  (if (= i k)
+   	(/ (n k) (d k))
+ 	(/ (n i) (+ (d i) (cf (+ i 1))))))
+ (cf 1))
+;1.38 (cont-frac (lambda (i) 1.0) euler-d 100)
+(define (euler-d i)
+ (if (= (remainder i 3) 2)
+  		(* 2 (/ (+ i 1) 3))
+		1))
+;1.39
+(define (tan-cf x k)
+ (define (cf i)
+  (if (= i k) 
+   (- (- (* i 2))) (square x))
+   (- (- (* i 2))) (/ (square x) (cf (+ i 1))))
+ (exact->inexact (/ x (cf 2))))
+
+;criteria version
+(define (tan-cf x k)
+ (Define (n i)
+  (if (= i 1) x (- (square x))))
+ (Define (d i) (- (* i 2) 1))
+ (exact->inexact (cont-frac n d k)))
+
+;new square root version
+(define (average-damp f) (lambda (x) (average x (f x))))
+(define (sqrt x) (fixed-point (average-damp (lambda (y) (/ x y)) 1.0)))
+
+;deriv
+(define dx 0.00001)
+(define (deriv g) (lambda (x) (/ (- (g (+ x dx)) (g x)) dx)))
+(define (newton-transform g) (lambda (x) (- x (/ (g x) ((deriv g) x)))))
+(define (newtons-method g guess) (fixed-point (newton-transform g) guess))
+
