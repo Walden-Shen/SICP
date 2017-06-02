@@ -96,4 +96,27 @@
    	 (* y b)
 	 (* a b))))
 
-;1.34   the function will call (2 2) at last, which is meaningless
+;1.34 the function will call (2 2) at last, which is meaningless
+
+;find the root of equations
+(define (average a b) (/ (+ a b) 2))
+
+(define (close-enough? x y) (< (abs (- x y)) 0.001))
+
+(define (search f neg-point pos-point)  ;in this case we'd better use an extra procedure to verify the neg-point & pos-point has no problem
+ (let ((midpoint (average neg-point pos-point)))
+  (if (close-enough? neg-point pos-point)
+   	midpoint
+	(let ((test-value (f midpoint)))
+	 (cond  ((positive? test-value) (search f neg-point test-value))
+	  		((negative? test-value) (search f test-value pos-point))
+			(else midpoint))))))
+;find the fixed points of function
+(define (fixed-point f first-guess)
+ (define (try guess)
+  (let ((next (f guess)))
+   (if (close-enough? next guess) next (try next))))
+ (try first-guess))
+
+;1.35 (fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.0)
+;1.36 (fixed-point (lambda (x) (/ (log 1000) (log x))) 2.0)
