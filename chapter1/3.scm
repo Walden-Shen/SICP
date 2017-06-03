@@ -157,3 +157,28 @@
 (define (newton-transform g) (lambda (x) (- x (/ (g x) ((deriv g) x)))))
 (define (newtons-method g guess) (fixed-point (newton-transform g) guess))
 
+(define (sqrt x) (newtons-method (lambda (y) (- (square y) x)) 1.0))
+
+;the most abstrct version
+(define (fixed-point-of-transform g transform guess)
+ (fixed-point (transform g) guess))
+
+;1.40
+(define (cube x) (* x x x))
+(define (cubic a b c) (lambda (x) (+ (cube x) (* a (square x)) (* b x) c)))
+;1.41
+(define (double proc) (lambda (x) (proc (proc x))))
+;1.42
+(define (compose f g) (lambda (x) (f (g x))))
+;1.43
+(define (repeated f val) (if (= val 0) (lambda (x) x) (compose f (repeated f (- val 1)))))
+;1.44
+(define (smooth f) (lambda (x) (/ (+ (f (- x dx)) (f x) (f (+ x dx))) 3)))
+(define (n-fold-smooth f n) (repeated smooth n))
+;1.46
+(define (iterative-improve good-enough? augment) 
+ (lambda (first-guess)
+  (define (try guess)
+   (let ((next (improve guess))
+		 (if (good-enough? guess next) next (try next)))))
+  (try first-guess)))
