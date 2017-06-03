@@ -4,6 +4,8 @@
 						(if (negative? (* n d))
 						 (cons (- (abs (/ n g))) (abs (/ d g)))
 						 (cons (abs (/ n g)) (abs (/ d g))))))
+;criteria version
+(define (make-rat n d) (if (< d 0) (cons (- n) (- d)) (cons n d)))
 (define (numer x) (car x))
 (define (denom x) (cdr x))
 (define (add-rat x y)
@@ -42,3 +44,30 @@
 								  (square (abs (- (y-point (start-segment segment)) (y-point (end-segment segment)))))))))
 (define (perimeter rectangle) (* 2 (+ (length (segmentA rectangle)) (length (segmentB rectangle)))))
 (define (area rectangle) (* (length (segmentA rectangle)) (length (segmentB rectangle))))
+
+;new cons
+(define (new-cons x y)
+ (define (dispatch m)
+  (cond ((= m 0) x)
+   		((= m 1) y)
+		(else (error "Argument not 0 or 1"))))
+ dispatch)
+(define (new-car z) (z 0))
+(define (new-cdr z) (z 1))
+
+;2.4
+(define (new-cons x y) (lambda (m) (m x y)))
+(define (new-car z) (z (lambda (p q) p)))
+(define (new-cdr z) (z (lambda (p q) q)))
+;2.5
+(define (pow x n) (if (= n 0) 1 (* x (pow x (- n 1)))))
+(define (new-cons a b) (* (pow 2 a) (pow 3 b)))
+(define (new-car z) (if (= (remainder z 2) 1) 0 (+ 1 (new-car (/ z 2)))))
+(define (new-cdr z) (if (not (= (remainder z 3) 0)) 0 (+ 1 (new-cdr (/ z 3)))))
+;2.6
+(define zero (lambda (f) (lambda (x) x)))
+(define (add-1 n) (lambda (f) (lambda (x) (f ((n f) x)))))
+(define one (lambda (f) (lambda (x) (f x))))
+(define two (lambda (f) (lambda (x) (f (f x)))))
+(define (+ (lambda (m) (lambda (n)) (lambda (f) (lambda (x) (m f (n f x)))))))
+;2.7 ~ 2.16 have already been finished in the cs61a Berkeley
