@@ -44,3 +44,55 @@
  (cond	((null? tree) '())
   		((not (pair? tree)) tree)
 		(else (reverse (list (deep-reverse (car tree)) (deep-reverse (cadr tree)))))))
+;2.28
+(define (fringe lst)
+ (cond  ((null? lst) '())
+  		((not (pair? lst)) (list lst))
+		(else (append (fringe (car lst)) (fringe (cadr lst))))))
+;2.29
+(define (make-mobile left right) (list left right))
+(define (make-branch length structure) (list length structure))
+
+(define (left-branch mobile) (car mobile))
+(define (right-branch mobile) (cadr mobile))
+(define (branch-length branch) (car branch))
+(define (branch-structure branch) (cadr branch))
+
+(define (total-weight mobile) (+ (branch-weight (left-branch mobile)) (branch-weight (right-branch mobile))))
+(define (branch-weight branch) (if (number? (branch-structure branch)) (branch-structure branch) (total-weight (branch-structure branch))))
+
+(define (balanced? mobile) (if (pair? mobile) 
+							(and (balanced? (branch-structure (left-branch mobile))) 
+								 (balanced? (branch-structure (right-branch mobile))) 
+								 (= (torque (left-branch mobile)) (torque (right-branch mobile))))
+							#t))
+(define (torque branch) (* (branch-length branch) (branch-weight branch)))
+;mapping over tree
+(define (scale-tree tree factor)
+ (cond  ((null? tree) '())
+  		((not (pair? tree)) (* factor tree))
+		(else (cons (scale-tree (car tree) factor) (scale-tree (cdr tree) factor)))))
+(define (map-scale-tree tree factor) 
+ (map (lambda (sub-tree) (if (pair? sub-tree) (map-scale-tree sub-tree factor) (* factor sub-tree))) tree))
+;2.30
+(define (square-tree tree)
+ (map (lambda (sub-tree) (if (pair? sub-tree) (square-tree sub-tree) (square sub-tree))) tree))
+(define (square-tree tree) 
+ (cond  ((null? tree) '()) 
+		((not (pair? tree)) (square tree))
+		(else (cons (square-tree (car tree)) (square-tree (cdr tree))))))
+;2.31
+(define (tree-map proc tree) (map (lambda (sub-tree) (if (pair? sub-tree) (tree-map proc sub-tree) (proc tree))) tree))
+(define (square-tree square tree) (tree-map square tree))
+;2.32
+(define (subsets s) (if (null? s) (list '()) (let ((rest (subsets (cdr s))))
+											  (append rest (map (lambda (x) (append (list (car s)) x)) rest)))))
+;sequences as conventional interface
+(define (sum-odd-squares tree)
+ (cond 	((null? tree) 0)
+  		((not (pair? tree)) (if (odd? tree) (square tree) 0))
+		(else (+ (sum-odd-squares (car tree)) (sum-odd-squares (cdr tree))))))
+(define (even-fibs n)
+ (define (next k) (if (> k n) '() (let ((f (fib k)))
+								   (if (even? f) (cons f (next (+ k 1))) (next (+ k 1))))))
+  (next 0))
