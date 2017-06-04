@@ -95,4 +95,28 @@
 (define (even-fibs n)
  (define (next k) (if (> k n) '() (let ((f (fib k)))
 								   (if (even? f) (cons f (next (+ k 1))) (next (+ k 1))))))
-  (next 0))
+ (next 0))
+;filter accumulate
+(define (filter predicate sequence)
+ (cond  ((null? sequence) '())
+  		((predicate (car sequence)) (cons (car sequence) (filter predicate (cdr sequence))))
+		(else (filter predicate (cdr sequence)))))
+(define (accumulate op initial sequence) (if (null? sequence) initial (op (car sequence)
+																	       (accumulate op initial (cdr sequence)))))
+(define (enumerate-interval low high) (if (> low high) '() (cons low (enumerate-interval (+ low 1) high))))
+(define (enumerate-tree tree)
+ (cond 	((null? tree) '())
+  		((not (pair? tree)) (list tree))
+		(else (append (enumerate-tree (car tree)) (enumerate-tree (cdr tree))))))
+
+(define (sum-odd-squares tree) (accumulate + 0 (map square (filter (lambda (x) (odd? x)) (enumerate-tree tree)))))
+(define (even-fibs n) (accumulate cons '() (filter even? (map fib (enumerate-interval 0 n)))))
+;2.33
+(define (map p sequence) (accumulate (lambda (x y) (p x y)) '() sequence))
+(define (append seq1 seq2) (accumulate cons seq2 seq1))
+(define (length sequence) (accumulate (lambda (x y) (+ y 1)) 0 sequence))
+;2.34
+(define (horner-eval x coefficient-sequence)
+ (accumulate (lambda (this-coeff higher-terms) (+ this-coeff (* higher-terms x))) 0 coefficient-sequence))
+;2.35
+(define (count-leaves t) (accumulate (lambda (x y) (+ y 1)) 0 (map fringe t)))
