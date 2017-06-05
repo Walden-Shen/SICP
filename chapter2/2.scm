@@ -24,7 +24,7 @@
 (define (same-parity a . lst) (filter (if (even? a) even? odd?) (cons a lst)))
 ;mapping over list
 (define (scale-list items factor) (if (null? items) '() (cons (* factor (car items)) (scale-list (cdr items) factor))))
-(define (map proc items) (if (null? items) '() (cons (proc (car items)) (map proc (cdr items)))))
+;(define (map proc items) (if (null? items) '() (cons (proc (car items)) (map proc (cdr items)))))
 ;2.21
 (define (square-list items) (map (lambda (x) (square x)) items))
 (define (square-list items) (if (null? items) '() (cons (square (car items)) (square-list (cdr items)))))
@@ -112,11 +112,31 @@
 (define (sum-odd-squares tree) (accumulate + 0 (map square (filter (lambda (x) (odd? x)) (enumerate-tree tree)))))
 (define (even-fibs n) (accumulate cons '() (filter even? (map fib (enumerate-interval 0 n)))))
 ;2.33
-(define (map p sequence) (accumulate (lambda (x y) (p x y)) '() sequence))
+;(define (map p sequence) (accumulate (lambda (x y) (p x y)) '() sequence))
 (define (append seq1 seq2) (accumulate cons seq2 seq1))
 (define (length sequence) (accumulate (lambda (x y) (+ y 1)) 0 sequence))
 ;2.34
 (define (horner-eval x coefficient-sequence)
  (accumulate (lambda (this-coeff higher-terms) (+ this-coeff (* higher-terms x))) 0 coefficient-sequence))
 ;2.35
-(define (count-leaves t) (accumulate (lambda (x y) (+ y 1)) 0 (map fringe t)))
+(define (count-leaves t) (accumulate (lambda (x y) (+ y 1)) 0 (fringe t)))
+(define (count-leaves t) (accumulate + 0 (map (lambda (sub-tree)
+											   (if (pair? sub-tree)
+												   (count-leaves sub-tree)
+												   1)) tree)))
+;2.36
+(define (delete-first seqs) (if (null? seqs) '() (cons (cdar seqs) (delete-first (cdr seqs)))))
+(define (get-first seqs) (if (null? seqs) '() (cons (caar seqs) (get-first (cdr seqs)))))
+(define (accumulate-n op init seqs)
+ (if  (null? (car seqs))
+	  '()
+	  (cons (accumulate op init (get-first seqs))
+	   		(accumulate-n op init (delete-first seqs)))))
+;2.37
+(define (dot-product v w) (accumulate + 0 (map * v w)))
+(define (matrix-*-vector m v) (map (lambda (col) (dot-product col v)) m))
+(define (transpose mat) (accumulate-n cons '() mat))
+(define (matrix-*-matrix m n) 
+ (let ((cols (transpose n))) (map (lambda (col-of-m) 
+								   (map (lambda (col-of-cols) (dot-product col-of-m col-of-cols))
+																 cols)) m)))
