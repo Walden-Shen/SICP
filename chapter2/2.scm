@@ -24,7 +24,7 @@
 (define (same-parity a . lst) (filter (if (even? a) even? odd?) (cons a lst)))
 ;mapping over list
 (define (scale-list items factor) (if (null? items) '() (cons (* factor (car items)) (scale-list (cdr items) factor))))
-;(define (map proc items) (if (null? items) '() (cons (proc (car items)) (map proc (cdr items)))))
+(define (map proc items) (if (null? items) '() (cons (proc (car items)) (map proc (cdr items)))))
 ;2.21
 (define (square-list items) (map (lambda (x) (square x)) items))
 (define (square-list items) (if (null? items) '() (cons (square (car items)) (square-list (cdr items)))))
@@ -127,6 +127,7 @@
 ;2.36
 (define (delete-first seqs) (if (null? seqs) '() (cons (cdar seqs) (delete-first (cdr seqs)))))
 (define (get-first seqs) (if (null? seqs) '() (cons (caar seqs) (get-first (cdr seqs)))))
+(define (get-first seqs) (accumulate append '() (map (lambda (x) (list (car x))) seqs)))
 (define (accumulate-n op init seqs)
  (if  (null? (car seqs))
 	  '()
@@ -166,6 +167,40 @@
 (define (prime? n) (= n (smallest-divisor n)))
 ;permutations
 (define (flatmap proc seq) (accumulate append '() (map proc seq)))
+(define (remove item sequence) (filter (lambda (x) (not (= x item))) sequence))
 (define (permutations s) (if (null? s) 
 						     (list '()) 
 							 (flatmap (lambda (x) (map (lambda (p) (cons x p)) (permutations (remove x s)))) s)))
+;2.40 my generate-pair has already been the unique pairs
+;2.41
+(define (generate-triple n) 
+ (flatmap (lambda (i) (flatmap (lambda (j) (map (lambda (k) (list i j k)) (enumerate-interval 1 (- j 1))))
+							(enumerate-interval 1 (- i 1))))
+		   (enumerate-interval 1 n)))
+(define (sum-eq-s? pair s) (eq? (accumulate + 0 pair) s))
+(define (make-triple-sum pair) (append pair (list (accumulate + 0 pair))))
+(define (triples-of-integer-eq-s n s) 
+ (map make-triple-sum (filter (lambda (x) (sum-eq-s? x s)) (generate-triple n))))
+;2.42
+(define (safe? k position) (iter-check (car position) (cdr position) 1))
+(define (adjoin-position new-row k rest-of-queens) (cons new-row rest-of-queens))
+(define (iter-check row-of-new-queen rest-of-queens i)
+ (if (null? rest-of-queens)
+  #t
+  (let ((row-of-current-queen (car rest-of-queens)))
+   (if (or  (= row-of-new-queen row-of-current-queen)
+			(= row-of-new-queen (+ i row-of-current-queen))
+			(= row-of-new-queen (- row-of-current-queen i)))
+		#f
+		(iter-check row-of-new-queen (cdr rest-of-queens) (+ i 1))))))
+(define (queens board-size)
+ (define (queen-cols k)
+  (if (= k 0)
+   (list board-size)
+   (filter 
+	(lambda (positions) (safe? k positions))
+	(flatmap 
+	 (lambda (rest-of-queens) (map (lambda (new-row) (adjoin-position new-row k rest-of-queens)) 
+							   (enumerate-interval 1 board-size)))
+	  (queen-cols (- k 1))))))
+ (queen-cols board-size))
