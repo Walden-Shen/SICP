@@ -16,11 +16,11 @@
 (define (no-more? vals) (null? vals))
 (define (except-first-denomination vals) (cdr vals))
 (define (first-denomination vals) (car vals))
-;2.20 my version didn't work since we can't deliver pairs to this function
+;2.20
 (define (same-parity a . lst) 
  (cond  ((null? lst) '())
-  		((= (remainder (car lst) 2) (remainder a 2)) (cons (car lst) (same-parity (cons a (cdr lst)))))
-		(else (same-parity (cons a (cdr lst))))))
+  		((= (remainder (car lst) 2) (remainder a 2)) (cons (car lst) (apply same-parity a (cdr lst))))
+		(else (apply same-parity a (cdr lst)))))
 (define (same-parity a . lst) (filter (if (even? a) even? odd?) (cons a lst)))
 ;mapping over list
 (define (scale-list items factor) (if (null? items) '() (cons (* factor (car items)) (scale-list (cdr items) factor))))
