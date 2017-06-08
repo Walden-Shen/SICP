@@ -135,3 +135,12 @@
 		((= x (entry tree)) tree)
 		((> x (entry tree)) (make-tree (entry tree) (left-branch tree) (adjoin-tree x (right-branch tree))))
 		(else (make-tree (entry tree) (adjoin-tree x (left-branch tree)) (right-branch tree)))))
+;2.63
+(define (tree->list-1 tree)
+ (if (null? tree) '() 
+  (append (tree->list-1 (left-branch tree)) (cons (entry tree) (tree->list-1 (right-branch tree))))))
+(define (tree->list-2 tree)
+ (define (copy-to-list tree result-list)
+  (if (null? tree) result-list 
+   (copy-to-list (left-branch tree) (cons (entry tree) (copy-to-list (right-branch tree) result-list)))))
+ (copy-to-list tree '()))
