@@ -136,11 +136,41 @@
 		((> x (entry tree)) (make-tree (entry tree) (left-branch tree) (adjoin-tree x (right-branch tree))))
 		(else (make-tree (entry tree) (adjoin-tree x (left-branch tree)) (right-branch tree)))))
 ;2.63
-(define (tree->list-1 tree)
+(define (tree->list-1 tree)  ;n^2
  (if (null? tree) '() 
   (append (tree->list-1 (left-branch tree)) (cons (entry tree) (tree->list-1 (right-branch tree))))))
-(define (tree->list-2 tree)
+(define (tree->list-2 tree)     ;n
  (define (copy-to-list tree result-list)
   (if (null? tree) result-list 
    (copy-to-list (left-branch tree) (cons (entry tree) (copy-to-list (right-branch tree) result-list)))))
  (copy-to-list tree '()))
+;2.64
+(define (list->tree elements) (car (partial-tree elements (length elements))))
+(define (partial-tree elts n)
+ (if (= n 0) (cons '() elts)
+  (let ((left-size (quotient (- n 1) 2)))
+   (let ((left-result (partial-tree elts left-size)))
+    (let ((left-tree (car left-result)) (non-left-elts (cdr left-result)) (right-size (- n (+ left-size 1))))
+	 (let ((this-entry (car non-left-elts)) (right-result (partial-tree (cdr non-left-elts) right-size)))
+	  (let ((right-tree (car right-result)) (remaining-elts (cdr right-result)))
+	   (cons (make-tree this-entry left-tree right-tree) remaining-elts))))))))
+;2.65
+(define (union-tree tree1 tree2) (list->tree (union-ordered-set (tree->list-2 tree1) (tree->list-2 tree2))))
+(define (intersection-tree tree1 tree2) (list->tree (intersection-ordered-set (tree->list-2 tree1) (tree->list-2 tree2))))
+;2.66
+(define (lookup given-key tree-of-records)
+ (cond  ((null? tree-of-records) #f)
+  		((= given-key (key (entry tree-of-records))) (entry tree-of-records))
+		((< given-key (key (entry tree-of-records))) (lookup given-key (left-branch tree-of-records)))
+		(else (lookup given-key (right-branch tree-of-records)))))
+;huffman tree
+(define (make-leaf symbol weight) (list 'leaf symbol weight))
+(define (leaf? object) (eq? (car object) 'leaf))
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+(define (make-code-tree left right) (list left right (append (symbol left) (symbol right)) (+ (weight left) (weight right))))
+(define (left-branch tree) (car tree))
+(define (right-branch tree) (cadr tree))
+(define (symbols tree) (if (leaf? tree) (list (symbol-leaf tree)) (caddr tree)))
+(define (weight tree) (if (leaf? tree) (weight-leaf tree) (cadddr tree)))
+
