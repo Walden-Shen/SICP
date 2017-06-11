@@ -1,0 +1,26 @@
+(define balance 100)
+(define (withdraw amount) 
+ (if (>= balance amount) (begin (set! balance (- balance amount)) balance) "Insufficient funds"))
+(define new-withdraw (let ((balance 100)) (lambda (amount) (if (>= balance amount)
+															(begin (set! balance (- balance amount)) balance)
+															"Insufficient funds"))))
+(define (make-withdraw balance) (lambda (amount) (if (>= balance amount) 
+												  (begin (set! balance (- balance amount)) balance)
+												  "Insufficient funds")))
+;3.3
+(define (make-account balance password)
+ (define (withdraw amount) (if (>= balance amount) 
+							(begin (set! balance (- balance amount)) balance) "Insufficient funds"))
+ (define (deposit amount) (begin (set! balance (+ balance amount)) balance))
+ (define (dispatch printed-pw m)
+  (cond ((not (eq? printed-pw password)) (display "Incorrect password"))
+   		((eq? m 'withdraw) withdraw)
+   		((eq? m 'deposit) deposit)
+		(else (error "unknown request " m))))
+ dispatch)
+;3.1
+(define (make-accumulator balance) (lambda (amount) (begin (set! balance (+ balance amount)) balance)))
+;3.2
+(define (make-monitored f) (let ((count 0)) (lambda (arg) (if (eq? arg 'how-many-calls?)
+															count
+															(begin (set! count (+ count 1)) (f arg))))))
