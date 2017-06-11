@@ -27,4 +27,38 @@
  (let ((type-tags (map type-tag args)))
   (let ((proc (get op type-tags)))
    (if proc (apply proc (map contents args)) (error "No method for these types -- APPLY-GENERIC" (list op type-tags))))))
-	
+;2.73
+(define (deriv exp var)
+ (cond  ((number? exp) 0)
+  		((variable? exp) (if (same-variable? exp var) 1 0))
+		(else ((get 'deriv (operator exp)) (operands exp) var))))
+(define (operator exp) (car exp))
+(define (operands exp) (cdr exp))
+;a if so, operands turn to be (cadr exp)
+;b
+(define (install-deriv-package)
+ (define (sum-deriv operands var) (make-sum (sum-deriv (car operands) var) (sum-deriv (cadr operands var))))
+ (put 'deriv '+ sum-deriv)
+ 'done)
+;c similar to b
+;d silly
+;message passing
+(define (make-from-real-imag x y)
+ (define (dispatch op)
+  (cond ((eq? op 'real-part) x)
+   		((eq? op 'imag-part) y)
+		((eq? op 'magnitude) (sqrt (+ (square x) (square y))))
+		((eq? op 'angle) (atan y x))
+		(else (error "unknown op" op))))
+ dispatch)
+(define (apply-generic op arg) (arg op))
+;2.75
+(define (make-from-mag-ang r a)
+ (define (dispatch op)
+  (cond ((eq? op 'real-part) (* r (cos a)))
+   		((eq? op 'imag-part) (* r (sin a)))
+		((eq? op 'magnitude) r)
+		((eq? op 'angle) a)
+		(else (error "Unknown op" op))))
+ dispatch)
+;2.76 message passing is suitable for new types, data-directed is for both
