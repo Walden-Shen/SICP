@@ -45,3 +45,18 @@
 																(abs (- y1 y2)))))
 (define (get-pi trials) (exact->inexact (estimate-integral (lambda (x y) (< (+ (square x) (square y)) 1.0))
 										 -1.0 1.0 -1.0 1.0 trials)))
+;imperative style --- bad
+(define (factorial n)
+ (let ((product 1) (counter 1))
+  (define (iter) (if (> counter n) product 
+				  (begin (set! product (* counter product)) (set! counter (+ counter 1)) (iter))))
+ (iter)))
+;3.7
+(define (display-password-error arg) (display "Incorrect password"))
+(define (make-joint account previous-password new-password)
+ (if (number? ((account previous-password 'deposit) 0))
+  (lambda (given-password mode)
+   (if (eq? given-password new-password) (account previous-password mode) (display-password-error)))
+  (display "Incorrect password")))
+;3.8
+(define f (lambda (first-value) (set! f (lambda (second-value) 0)) first-value))
