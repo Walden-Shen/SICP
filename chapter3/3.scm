@@ -95,5 +95,57 @@
  (cond  ((empty-deque? deque) (error "Delete called with an empty queue"))
   		(else (set-front-ptr! (front-deque deque) (rear-ptr (front-deque deque)))
 		 	  (set-rear-ptr! (rear-deque deque) (front-ptr (front-deque deque))) (front-deque deque))))
-
- 
+;table
+(define (lookup key table)
+ (let ((record (assoc key (cdr table)))) (if record (cdr record) #f)))
+(define (assoc key records)
+ (cond  ((null? records) #f)
+  		((equal? key (caar records)) (car records))
+		(else (assoc key (cdr records)))))
+(define (insert! key value table)
+ (let ((record (assoc key (cdr table))))
+  (if record (set-cdr! record value) (set-cdr! table (cons record (cdr table)))))
+ 'ok)
+(define (make-table) (list '*table*))
+;2-dimensional table
+(define (make-2-table)
+ (let ((local-table (list '*table*)))
+  (define (lookup key-1 key-2)
+   (let ((subtable (assoc key-1 (cdr local-table))))
+	(if subtable
+	 (let ((record (assoc key-2 (cdr subtable))))
+	  (if record (cdr record) #f))
+	   #f)))
+  (define (insert! key-1 key-2 value)
+   (let ((subtable (assoc key-1 (cdr local-table))))
+	(if subtable
+	 (let ((record (assoc key-2 (cdr subtable))))
+	  (if record (set-cdr! record value) (set-cdr! subtable (cons (cons key-2 value) (cdr subtable)))))
+	 (set-cdr! local-table (cons (list key-1 (cons key-2 value)) (cdr local-table)))))
+   'ok)
+  (define (dispatch m)
+   (cond  ((eq? m 'lookup-proc) lookup)
+		  ((eq? m 'insert-proc!) insert!)
+		  (else (error "Unknown operation " m))))
+  dispatch))
+(define operation-table (make-2-table))
+(define get (operation-table 'lookup-proc))  ;impressive. It's oop
+(define put (operation-table 'insert-proc!))
+;3.24
+(define (same-key? key-1 key-2) (< (abs (- key-1 key-2)) 0.01))
+;3.25 3.26 too large. I would do that later
+;3.27
+(define (memoize f)
+ (let ((table (make-table)))
+  (lambda (x)
+   (let ((previously-computed-result (lookup x table)))
+	(or previously-computed-result
+	 (let ((result (f x))) (insert! x result table) result))))))
+(define memo-fib (memoize (lambda (n) 
+						   (cond  ((= n 0) 0)
+								  ((= n 1) 1)
+								  (else (+ (memo-fib (- n 1)) (memo-fib (- n 2))))))))
+(define (fib n) 
+	   (cond  ((= n 0) 0)
+			  ((= n 1) 1)
+			  (else (+ (fib (- n 1)) (fib (- n 2))))))
