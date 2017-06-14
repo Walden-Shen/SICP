@@ -104,7 +104,7 @@
 		(else (assoc key (cdr records)))))
 (define (insert! key value table)
  (let ((record (assoc key (cdr table))))
-  (if record (set-cdr! record value) (set-cdr! table (cons record (cdr table)))))
+  (if record (set-cdr! record value) (set-cdr! table (cons (cons key value) (cdr table)))))
  'ok)
 (define (make-table) (list '*table*))
 ;2-dimensional table
@@ -134,7 +134,7 @@
 ;3.24
 (define (same-key? key-1 key-2) (< (abs (- key-1 key-2)) 0.01))
 ;3.25 3.26 too large. I would do that later
-;3.27
+;3.27 error
 (define (memoize f)
  (let ((table (make-table)))
   (lambda (x)
@@ -149,3 +149,18 @@
 	   (cond  ((= n 0) 0)
 			  ((= n 1) 1)
 			  (else (+ (fib (- n 1)) (fib (- n 2))))))
+;digital circuit
+(define (half-adder a b s c)
+ (let ((d (make-wire)) (e (make-wire)))
+  (or-gate a b d)
+  (and-gate a b c)
+  (inverter c e)
+  (and-gate d e s)
+  'ok))
+(define (full-adder a b c-in sum c-out)
+ (let ((s (make-wire)) (c1 (make-wire)) (c2 (make-wire)))
+  (half-adder b c-in s c1)
+  (half-adder a c1 sum c2)
+  (or-gate c1 c2 c-out)
+  'ok))
+
